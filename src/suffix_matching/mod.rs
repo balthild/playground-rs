@@ -10,7 +10,7 @@ mod tests {
     use test::{black_box, Bencher};
 
     #[bench]
-    fn bench_simple_matcher(b: &mut Bencher) {
+    fn bench_simple(b: &mut Bencher) {
         let matcher = super::simple::Matcher::new(&get_suffixes());
 
         assert!(matcher.matches("foo.tar.gz"));
@@ -21,7 +21,7 @@ mod tests {
     }
 
     #[bench]
-    fn bench_glob_matcher(b: &mut Bencher) {
+    fn bench_glob(b: &mut Bencher) {
         let matcher = super::simple::Matcher::new(&get_suffixes());
 
         assert!(matcher.matches("foo.tar.gz"));
@@ -32,7 +32,7 @@ mod tests {
     }
 
     #[bench]
-    fn bench_trie_matcher(b: &mut Bencher) {
+    fn bench_trie(b: &mut Bencher) {
         let matcher = super::trie::Matcher::new(&get_suffixes());
 
         assert!(matcher.matches("foo.tar.gz"));
@@ -43,7 +43,7 @@ mod tests {
     }
 
     #[bench]
-    fn bench_ptrie_matcher(b: &mut Bencher) {
+    fn bench_ptrie(b: &mut Bencher) {
         let matcher = super::ptrie::Matcher::new(&get_suffixes());
 
         assert!(matcher.matches("foo.tar.gz"));
@@ -54,7 +54,7 @@ mod tests {
     }
 
     #[bench]
-    fn bench_yada_matcher(b: &mut Bencher) {
+    fn bench_yada(b: &mut Bencher) {
         let matcher = super::yada::Matcher::new(&get_suffixes());
 
         assert!(matcher.matches("foo.tar.gz"));
@@ -65,7 +65,7 @@ mod tests {
     }
 
     #[bench]
-    fn bench_chumsky_matcher(b: &mut Bencher) {
+    fn bench_chumsky(b: &mut Bencher) {
         let matcher = super::chumsky::Matcher::new(&get_suffixes());
 
         assert!(matcher.matches("foo.tar.gz"));
