@@ -1,6 +1,8 @@
 pub mod chumsky;
 pub mod glob;
+pub mod ptrie;
 pub mod simple;
+pub mod trie;
 pub mod yada;
 
 #[cfg(test)]
@@ -21,6 +23,28 @@ mod tests {
     #[bench]
     fn bench_glob_matcher(b: &mut Bencher) {
         let matcher = super::simple::Matcher::new(&get_suffixes());
+
+        assert!(matcher.matches("foo.tar.gz"));
+        assert!(!matcher.matches("foo.bar"));
+
+        b.iter(|| matcher.matches(black_box("foo.tar.gz")));
+        b.iter(|| matcher.matches(black_box("foo.bar")));
+    }
+
+    #[bench]
+    fn bench_trie_matcher(b: &mut Bencher) {
+        let matcher = super::trie::Matcher::new(&get_suffixes());
+
+        assert!(matcher.matches("foo.tar.gz"));
+        assert!(!matcher.matches("foo.bar"));
+
+        b.iter(|| matcher.matches(black_box("foo.tar.gz")));
+        b.iter(|| matcher.matches(black_box("foo.bar")));
+    }
+
+    #[bench]
+    fn bench_ptrie_matcher(b: &mut Bencher) {
+        let matcher = super::ptrie::Matcher::new(&get_suffixes());
 
         assert!(matcher.matches("foo.tar.gz"));
         assert!(!matcher.matches("foo.bar"));
@@ -53,6 +77,8 @@ mod tests {
 
     fn get_suffixes() -> Vec<&'static str> {
         vec![
+            ".foo.bar",
+            ".foobar",
             ".png",
             ".jpg",
             ".jpeg",
@@ -69,16 +95,30 @@ mod tests {
             ".pdf",
             ".doc",
             ".docx",
+            ".docm",
+            ".rtf",
+            ".xls",
             ".xlsx",
+            ".csv",
+            ".ppt",
             ".pptx",
             ".odt",
             ".ods",
             ".odp",
-            ".rtf",
+            ".html",
+            ".htm",
+            ".mht",
+            ".mhtml",
+            ".css",
+            ".js",
+            ".xml",
+            ".json",
+            ".jsonld",
+            ".json5",
+            ".yaml",
+            ".yml",
+            ".toml",
             ".txt",
-            ".csv",
-            ".ppt",
-            ".pptx",
             ".mp3",
             ".wav",
             ".mp4",
@@ -102,6 +142,10 @@ mod tests {
             ".iso",
             ".deb",
             ".rpm",
+            ".apk",
+            ".jar",
+            ".war",
+            ".xaml",
         ]
     }
 }

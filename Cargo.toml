@@ -6,4 +6,6 @@ edition = "2021"
 [dependencies]
 chumsky = { git = "https://github.com/zesterer/chumsky", rev = "35b5c50" }
 glob-match = "0.2.1"
+ptrie = "0.7.2"
+trie-rs = "0.4.2"
 yada = "0.5.1"
