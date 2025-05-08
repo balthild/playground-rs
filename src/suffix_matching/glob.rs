@@ -6,7 +6,7 @@ pub struct Matcher {
 
 impl Matcher {
     pub fn new(suffixes: &[&str]) -> Self {
-        let pattern = format!("{{{}}}", suffixes.join(","));
+        let pattern = format!("*{{{}}}", suffixes.join(","));
         Self { pattern }
     }
 

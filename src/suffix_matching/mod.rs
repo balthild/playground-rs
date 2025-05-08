@@ -2,80 +2,90 @@ pub mod chumsky;
 pub mod glob;
 pub mod ptrie;
 pub mod simple;
-pub mod trie;
+pub mod triers;
 pub mod yada;
 
 #[cfg(test)]
 mod tests {
     use test::{black_box, Bencher};
 
-    #[bench]
-    fn bench_simple(b: &mut Bencher) {
-        let matcher = super::simple::Matcher::new(&get_suffixes());
+    macro_rules! bench_matcher {
+        ($b:ident, $t:ty, $few:expr) => {
+            let matcher = <$t>::new(&get_suffixes($few));
 
-        assert!(matcher.matches("foo.tar.gz"));
-        assert!(!matcher.matches("foo.bar"));
+            assert!(matcher.matches("foo.tar.gz"));
+            assert!(!matcher.matches("foo.bar"));
 
-        b.iter(|| matcher.matches(black_box("foo.tar.gz")));
-        b.iter(|| matcher.matches(black_box("foo.bar")));
+            $b.iter(|| matcher.matches(black_box("foo.tar.gz")));
+            $b.iter(|| matcher.matches(black_box("foo.bar")));
+        };
     }
 
     #[bench]
-    fn bench_glob(b: &mut Bencher) {
-        let matcher = super::simple::Matcher::new(&get_suffixes());
-
-        assert!(matcher.matches("foo.tar.gz"));
-        assert!(!matcher.matches("foo.bar"));
-
-        b.iter(|| matcher.matches(black_box("foo.tar.gz")));
-        b.iter(|| matcher.matches(black_box("foo.bar")));
+    fn few_simple(b: &mut Bencher) {
+        bench_matcher!(b, super::simple::Matcher, true);
     }
 
     #[bench]
-    fn bench_trie(b: &mut Bencher) {
-        let matcher = super::trie::Matcher::new(&get_suffixes());
-
-        assert!(matcher.matches("foo.tar.gz"));
-        assert!(!matcher.matches("foo.bar"));
-
-        b.iter(|| matcher.matches(black_box("foo.tar.gz")));
-        b.iter(|| matcher.matches(black_box("foo.bar")));
+    fn many_simple(b: &mut Bencher) {
+        bench_matcher!(b, super::simple::Matcher, false);
     }
 
     #[bench]
-    fn bench_ptrie(b: &mut Bencher) {
-        let matcher = super::ptrie::Matcher::new(&get_suffixes());
-
-        assert!(matcher.matches("foo.tar.gz"));
-        assert!(!matcher.matches("foo.bar"));
-
-        b.iter(|| matcher.matches(black_box("foo.tar.gz")));
-        b.iter(|| matcher.matches(black_box("foo.bar")));
+    fn few_glob(b: &mut Bencher) {
+        bench_matcher!(b, super::glob::Matcher, true);
     }
 
     #[bench]
-    fn bench_yada(b: &mut Bencher) {
-        let matcher = super::yada::Matcher::new(&get_suffixes());
-
-        assert!(matcher.matches("foo.tar.gz"));
-        assert!(!matcher.matches("foo.bar"));
-
-        b.iter(|| matcher.matches(black_box("foo.tar.gz")));
-        b.iter(|| matcher.matches(black_box("foo.bar")));
+    fn many_glob(b: &mut Bencher) {
+        bench_matcher!(b, super::glob::Matcher, false);
     }
 
     #[bench]
-    fn bench_chumsky(b: &mut Bencher) {
-        let matcher = super::chumsky::Matcher::new(&get_suffixes());
-
-        assert!(matcher.matches("foo.tar.gz"));
-        assert!(!matcher.matches("foo.bar"));
-
-        b.iter(|| matcher.matches(black_box("foo.tar.gz")));
-        b.iter(|| matcher.matches(black_box("foo.bar")));
+    fn few_trie(b: &mut Bencher) {
+        bench_matcher!(b, super::triers::Matcher, true);
     }
 
-    fn get_suffixes() -> Vec<&'static str> {
+    #[bench]
+    fn many_trie(b: &mut Bencher) {
+        bench_matcher!(b, super::triers::Matcher, false);
+    }
+
+    #[bench]
+    fn few_ptrie(b: &mut Bencher) {
+        bench_matcher!(b, super::ptrie::Matcher, true);
+    }
+
+    #[bench]
+    fn many_ptrie(b: &mut Bencher) {
+        bench_matcher!(b, super::ptrie::Matcher, false);
+    }
+
+    #[bench]
+    fn few_yada(b: &mut Bencher) {
+        bench_matcher!(b, super::yada::Matcher, true);
+    }
+
+    #[bench]
+    fn many_yada(b: &mut Bencher) {
+        bench_matcher!(b, super::yada::Matcher, false);
+    }
+
+    #[bench]
+    fn few_chumsky(b: &mut Bencher) {
+        bench_matcher!(b, super::chumsky::Matcher, true);
+    }
+
+    #[bench]
+    fn many_chumsky(b: &mut Bencher) {
+        bench_matcher!(b, super::chumsky::Matcher, false);
+    }
+
+    fn get_suffixes(few: bool) -> Vec<&'static str> {
+        if few {
+            return vec![".foo.bar", ".foobar", ".tar.gz"];
+        }
+
         vec![
             ".foo.bar",
             ".foobar",

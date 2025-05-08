@@ -21,7 +21,7 @@ impl Matcher {
         let mut key = input.as_bytes().to_vec();
         key.reverse();
 
-        let matched = self.trie.find_longest_prefix(key.iter().copied());
+        let matched = self.trie.find_longest_prefix(key.into_iter());
         matched.is_some()
     }
 }
