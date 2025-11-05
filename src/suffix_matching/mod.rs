@@ -2,6 +2,7 @@ pub mod chumsky;
 pub mod glob;
 pub mod ptrie;
 pub mod simple;
+pub mod simple2;
 pub mod triers;
 pub mod yada;
 
@@ -10,83 +11,46 @@ mod tests {
     use test::{black_box, Bencher};
 
     macro_rules! bench_matcher {
-        ($b:ident, $t:ty, $few:expr) => {
-            let matcher = <$t>::new(&get_suffixes($few));
+        ($name:ident) => {
+            bench_matcher!(few_, $name, get_suffixes(true));
+            bench_matcher!(many_, $name, get_suffixes(false));
+        };
+        ($prefix:ident, $name:ident, $haystack:expr) => {
+            #[bench]
+            fn ${concat(create_, $prefix, $name)}(b: &mut Bencher) {
+                b.iter(|| super::$name::Matcher::new(black_box($haystack)));
+            }
 
-            assert!(matcher.matches("foo.tar.gz"));
-            assert!(!matcher.matches("foo.bar"));
+            #[bench]
+            fn ${concat(match_best_, $prefix, $name)}(b: &mut Bencher) {
+                let matcher = super::$name::Matcher::new($haystack);
+                assert!(matcher.matches("foo.tar.gz"));
+                b.iter(|| matcher.matches(black_box("foo.tar.gz")));
+            }
 
-            $b.iter(|| matcher.matches(black_box("foo.tar.gz")));
-            $b.iter(|| matcher.matches(black_box("foo.bar")));
+            #[bench]
+            fn ${concat(match_worst_, $prefix, $name)}(b: &mut Bencher) {
+                let matcher = super::$name::Matcher::new($haystack);
+                assert!(!matcher.matches("foo.bar"));
+                b.iter(|| matcher.matches(black_box("foo.bar")));
+            }
         };
     }
 
-    #[bench]
-    fn few_simple(b: &mut Bencher) {
-        bench_matcher!(b, super::simple::Matcher, true);
-    }
+    bench_matcher!(simple);
+    bench_matcher!(simple2);
+    bench_matcher!(glob);
+    bench_matcher!(triers);
+    bench_matcher!(ptrie);
+    bench_matcher!(yada);
+    bench_matcher!(chumsky);
 
-    #[bench]
-    fn many_simple(b: &mut Bencher) {
-        bench_matcher!(b, super::simple::Matcher, false);
-    }
-
-    #[bench]
-    fn few_glob(b: &mut Bencher) {
-        bench_matcher!(b, super::glob::Matcher, true);
-    }
-
-    #[bench]
-    fn many_glob(b: &mut Bencher) {
-        bench_matcher!(b, super::glob::Matcher, false);
-    }
-
-    #[bench]
-    fn few_trie(b: &mut Bencher) {
-        bench_matcher!(b, super::triers::Matcher, true);
-    }
-
-    #[bench]
-    fn many_trie(b: &mut Bencher) {
-        bench_matcher!(b, super::triers::Matcher, false);
-    }
-
-    #[bench]
-    fn few_ptrie(b: &mut Bencher) {
-        bench_matcher!(b, super::ptrie::Matcher, true);
-    }
-
-    #[bench]
-    fn many_ptrie(b: &mut Bencher) {
-        bench_matcher!(b, super::ptrie::Matcher, false);
-    }
-
-    #[bench]
-    fn few_yada(b: &mut Bencher) {
-        bench_matcher!(b, super::yada::Matcher, true);
-    }
-
-    #[bench]
-    fn many_yada(b: &mut Bencher) {
-        bench_matcher!(b, super::yada::Matcher, false);
-    }
-
-    #[bench]
-    fn few_chumsky(b: &mut Bencher) {
-        bench_matcher!(b, super::chumsky::Matcher, true);
-    }
-
-    #[bench]
-    fn many_chumsky(b: &mut Bencher) {
-        bench_matcher!(b, super::chumsky::Matcher, false);
-    }
-
-    fn get_suffixes(few: bool) -> Vec<&'static str> {
+    const fn get_suffixes(few: bool) -> &'static [&'static str] {
         if few {
-            return vec![".foo.bar", ".foobar", ".tar.gz"];
+            return &[".foo.bar", ".foobar", ".tar.gz"];
         }
 
-        vec![
+        &[
             ".foo.bar",
             ".foobar",
             ".png",

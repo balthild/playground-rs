@@ -2,13 +2,13 @@ use chumsky::input::IterInput;
 use chumsky::prelude::*;
 
 #[derive(Debug, Clone)]
-struct Source<'s> {
+struct RevSource<'s> {
     data: &'s [u8],
     len: usize,
     offset: usize,
 }
 
-impl<'s> Source<'s> {
+impl<'s> RevSource<'s> {
     pub fn new(data: &'s [u8]) -> Self {
         let len = data.len();
         let offset = 0;
@@ -20,7 +20,7 @@ impl<'s> Source<'s> {
     }
 }
 
-impl Iterator for Source<'_> {
+impl Iterator for RevSource<'_> {
     type Item = (u8, SimpleSpan);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -41,7 +41,7 @@ impl Iterator for Source<'_> {
     }
 }
 
-type RevInput<'s> = IterInput<Source<'s>, SimpleSpan>;
+type RevInput<'s> = IterInput<RevSource<'s>, SimpleSpan>;
 type RevParser<'s, O> = Boxed<'s, 's, RevInput<'s>, O>;
 
 pub struct Matcher<'a> {
@@ -65,7 +65,7 @@ impl<'a> Matcher<'a> {
     }
 
     pub fn matches(&self, input: &'a str) -> bool {
-        let src = Source::new(input.as_bytes());
+        let src = RevSource::new(input.as_bytes());
         let eoi = src.eoi();
         let res = self.parser.parse(RevInput::new(src, eoi));
         !res.has_errors()
